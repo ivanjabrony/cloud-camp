@@ -13,41 +13,41 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InitializeHandlers(pool *pgxpool.Pool, cfg *config.Config, logger *logger.MyLogger) (*Handlers, error) {
+func InitBackend(pool *pgxpool.Pool, cfg *config.Config, logger *logger.MyLogger) (*Handlers, *storage.BucketStorage, error) {
 	if pool == nil || cfg == nil || logger == nil {
-		return nil, errors.New("nil values in init constructor")
+		return nil, nil, errors.New("nil values in init constructor")
 	}
 
 	storage, err := initStorages()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	repository, err := initRepositories(pool, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	services, err := initServices(repository, storage, cfg, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ratelimiter, err := initRatelimiter(storage, cfg, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	handlers, err := initHandlers(services, ratelimiter, cfg, logger)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return handlers, nil
+	return handlers, storage.BucketStorage, nil
 }
 
 type storages struct {
-	bucketStorage *storage.BucketStorage
+	BucketStorage *storage.BucketStorage
 }
 
 type repositories struct {
@@ -78,7 +78,7 @@ func initRepositories(pool *pgxpool.Pool, logger *logger.MyLogger) (*repositorie
 }
 
 func initServices(repo *repositories, storage *storages, cfg *config.Config, logger *logger.MyLogger) (*services, error) {
-	service, err := service.NewService(cfg, logger, repo.configRepo, storage.bucketStorage)
+	service, err := service.NewService(cfg, logger, repo.configRepo, storage.BucketStorage)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func initServices(repo *repositories, storage *storages, cfg *config.Config, log
 }
 
 func initRatelimiter(storage *storages, cfg *config.Config, logger *logger.MyLogger) (*ratelimit.RateLimiter, error) {
-	ratelimiter, err := ratelimit.NewRateLimiter(storage.bucketStorage, cfg.UserConfig.Tokens, float64(cfg.UserConfig.RatePerSec))
+	ratelimiter, err := ratelimit.NewRateLimiter(storage.BucketStorage, cfg.UserConfig.Tokens, float64(cfg.UserConfig.RatePerSec))
 	if err != nil {
 		return nil, err
 	}

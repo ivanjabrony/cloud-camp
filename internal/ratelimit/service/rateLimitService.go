@@ -86,10 +86,3 @@ func (rs *RateLimitService) CreateOrUpdateConfig(ctx context.Context, userConfig
 	}
 	return nil
 }
-
-// func (ts *TokenService) StoreConfig(ctx context.Context, key string, config *dto.UserConfig) (err error) {
-// }
-// func (ts *TokenService) LoadConfigByIp(ctx context.Context, key string) (config *dto.UserConfig, err error) {
-// }
-// func (ts *TokenService) LoadAllConfigs() (ctx context.Context, configs []*dto.UserConfig, err error) {
-// }

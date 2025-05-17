@@ -18,7 +18,7 @@ func main() {
 	var configPath string
 	switch len(os.Args) {
 	case 1:
-		configPath = "config.json"
+		configPath = "../../config.json"
 	case 2:
 		configPath = os.Args[1]
 	default:

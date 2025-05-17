@@ -29,3 +29,9 @@ func (bs *BucketStorage) Load(ctx context.Context, key string) (bucket *ratelimi
 	value, ok := bs.buckets[key]
 	return value, ok
 }
+
+func (bs *BucketStorage) Stop(ctx context.Context) {
+	for _, b := range bs.buckets {
+		b.Stop()
+	}
+}

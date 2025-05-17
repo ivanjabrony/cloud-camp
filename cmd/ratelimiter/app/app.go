@@ -1,11 +1,13 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"ivanjabrony/cloud-test/cmd/ratelimiter/initDB"
 	"ivanjabrony/cloud-test/internal/logger"
 	"ivanjabrony/cloud-test/internal/ratelimit/config"
 	"ivanjabrony/cloud-test/internal/ratelimit/controller/router"
+	"ivanjabrony/cloud-test/internal/ratelimit/storage"
 	"log/slog"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -13,9 +15,10 @@ import (
 )
 
 type Application struct {
-	cfg    *config.Config
-	l      *logger.MyLogger
-	router *router.RLRouter
+	cfg     *config.Config
+	l       *logger.MyLogger
+	router  *router.RLRouter
+	storage *storage.BucketStorage
 }
 
 func NewApplication(cfg *config.Config, logger *logger.MyLogger) (*Application, func(), error) {
@@ -34,7 +37,7 @@ func NewApplication(cfg *config.Config, logger *logger.MyLogger) (*Application, 
 		return nil, nil, errors.New("couldn't apply database migrations")
 	}
 
-	handlers, err := InitializeHandlers(pool, cfg, logger)
+	handlers, storage, err := InitBackend(pool, cfg, logger)
 	if err != nil {
 		return nil, closeDB, err
 	}
@@ -42,9 +45,10 @@ func NewApplication(cfg *config.Config, logger *logger.MyLogger) (*Application, 
 	router := router.NewRouter(cfg, logger, handlers.Config, handlers.Ratelimit)
 
 	app := Application{
-		cfg:    cfg,
-		l:      logger,
-		router: router,
+		cfg:     cfg,
+		l:       logger,
+		router:  router,
+		storage: storage,
 	}
 
 	return &app, closeDB, nil
@@ -64,6 +68,11 @@ func (app *Application) Run() error {
 	return nil
 }
 
-func (app *Application) Stop() {
-	//TODO, send cancel to all context with timeout so all requests can finish
+func (app *Application) Stop(ctx context.Context) error {
+	err := app.router.Stop(ctx)
+	if err != nil {
+		return err
+	}
+	app.storage.Stop(ctx)
+	return nil
 }

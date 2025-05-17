@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"ivanjabrony/cloud-test/cmd/ratelimiter/app"
 	"ivanjabrony/cloud-test/internal/logger"
 	"ivanjabrony/cloud-test/internal/ratelimit/config"
@@ -33,14 +34,42 @@ func main() {
 	}
 	defer deferFn()
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Run application in separate goroutine
+	appErr := make(chan error, 1)
 	go func() {
+		l.Info("Starting application")
 		if err := app.Run(); err != nil {
-			log.Fatalf("app encountered an error while running: %v", err)
+			appErr <- err
 		}
 	}()
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit // TODO app.Stop() with grateful shutdown
-	l.Info("Gracefully shutting down application")
+	select {
+	case sig := <-quit:
+		l.Info("Received signal, initiating shutdown",
+			slog.String("signal", sig.String()))
+
+		// Start graceful shutdown with timeout
+		shutdownCtx, shutdownCancel := context.WithTimeout(ctx, cfg.ShutdownTimeout)
+		defer shutdownCancel()
+
+		if err := app.Stop(shutdownCtx); err != nil {
+			l.Error("Graceful shutdown failed",
+				slog.Any("error", err),
+				slog.Duration("timeout", cfg.ShutdownTimeout))
+			os.Exit(1)
+		}
+
+		l.Info("Application stopped gracefully")
+
+	case err := <-appErr:
+		l.Error("Application runtime error", slog.Any("error", err))
+		cancel() // Trigger cleanup
+		os.Exit(1)
+	}
+
 }
