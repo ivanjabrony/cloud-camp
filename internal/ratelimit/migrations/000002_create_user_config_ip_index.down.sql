@@ -1,2 +1,1 @@
-
-CREATE INDEX IF NOT EXISTS user_configs_ip_hash ON user_configs USING HASH (ip) INCLUDE (capacity, rate_per_sec);
+DROP INDEX IF EXISTS user_configs_ip_hash;

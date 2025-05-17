@@ -1,4 +1,4 @@
-FROM golang:1.23.1-alpine AS builder
+FROM golang:1.24.3-alpine AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ WORKDIR /root
 
 COPY --from=builder /app/ratelimiter .
 COPY --from=builder /app/internal/ratelimit/migrations ./migrations
-COPY --from=builder /app/cmd/ratelimit/config.json .
+COPY --from=builder /app/cmd/ratelimiter/config.json .
 
 EXPOSE 3000
-CMD ["./ratelimiter config.json"]
+CMD ["./ratelimiter", "./config.json"]
