@@ -25,7 +25,7 @@ func NewApplication(cfg *config.Config, logger *logger.MyLogger) (*Application, 
 		return nil, nil, err
 	}
 
-	err = initDB.RunMigrations(pool, cfg.DB.GetConnStr(), "../../../internal/ratelimit/migrations")
+	err = initDB.RunMigrations(pool, cfg.DB.GetConnStr(), "./migrations")
 	if err != nil {
 		logger.Error("Error while migrating database", slog.Any("error", err))
 		return nil, nil, errors.New("couldn't apply database migrations")
