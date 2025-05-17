@@ -7,6 +7,8 @@ import (
 	"ivanjabrony/cloud-test/internal/ratelimit/config"
 	"ivanjabrony/cloud-test/internal/ratelimit/controller/router"
 	"log/slog"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 )
 
 type Application struct {
