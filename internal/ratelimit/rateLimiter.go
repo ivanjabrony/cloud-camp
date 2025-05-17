@@ -39,3 +39,8 @@ func (rl *RateLimiter) Allow(ctx context.Context, ip string) bool {
 
 	return bucket.Allow()
 }
+
+func (rl *RateLimiter) IsExists(ctx context.Context, ip string) bool {
+	_, ok := rl.bucketStorage.Load(ctx, ip)
+	return ok
+}

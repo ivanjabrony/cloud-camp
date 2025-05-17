@@ -9,6 +9,7 @@ import (
 	"log/slog"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 type Application struct {
@@ -27,7 +28,7 @@ func NewApplication(cfg *config.Config, logger *logger.MyLogger) (*Application, 
 		return nil, nil, err
 	}
 
-	err = initDB.RunMigrations(pool, cfg.DB.GetConnStr(), "./migrations")
+	err = initDB.RunMigrations(pool, cfg.DB.GetConnStr(), "file://migrations")
 	if err != nil {
 		logger.Error("Error while migrating database", slog.Any("error", err))
 		return nil, nil, errors.New("couldn't apply database migrations")

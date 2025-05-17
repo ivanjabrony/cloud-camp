@@ -1,15 +1,19 @@
 {
   "env": "test",
   "log_format": "text",
-  "target_url": "http://localhost:8080",
-  "port": 3000,
+  "target_url": "http://dummy:8080",
+  "port": 3000, 
+  "max_retries": 3,
+  "repository_timeout": "5s",
+  "bucket_configure_timeout": "2s",
+  "shutdown_timeout": "10s",
   "user_config": {
-    "tokens": 10,
-    "rate_per_sec": 2.0
+    "tokens": 1000,
+    "rate_per_sec": 1000
   },
   "db": {
-    "max_conns": 5,
-    "min_conns": 1,
+    "max_conns": 25,
+    "min_conns": 5,
     "max_conn_lifetime": "5m"
   }
 }

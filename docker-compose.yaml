@@ -19,6 +19,12 @@ services:
     env_file:
       - .env
 
+  dummy:
+    image: thomaspoignant/hello-world-rest-json
+    ports:
+      - "8080:8080"
+    networks:
+      - internal
   db:
     image: postgres:15  
     environment:

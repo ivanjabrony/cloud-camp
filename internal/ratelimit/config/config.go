@@ -72,15 +72,15 @@ func (d *duration) UnmarshalJSON(b []byte) error {
 
 func MustLoadConfig(path string) *Config {
 	type config struct {
-		Env                    string   `json:"env"`
-		LogFormat              string   `json:"log_format"`
-		TargetURL              string   `json:"target_url"`
-		Port                   int      `json:"port"`
-		MaxRetries             int      `json:"max_retries"`
-		RepositoryTimeout      duration `json:"repository_timeout"`
-		BucketConfigureTimeout duration `json:"bucket_configure_timeout"`
-		ShutdownTimeout        duration `json:"shutdown_timeout"`
-		UserConfig             UserConfig
+		Env                    string     `json:"env"`
+		LogFormat              string     `json:"log_format"`
+		TargetURL              string     `json:"target_url"`
+		Port                   int        `json:"port"`
+		MaxRetries             int        `json:"max_retries"`
+		RepositoryTimeout      duration   `json:"repository_timeout"`
+		BucketConfigureTimeout duration   `json:"bucket_configure_timeout"`
+		ShutdownTimeout        duration   `json:"shutdown_timeout"`
+		UserConfig             UserConfig `json:"user_config"`
 		DB                     struct {
 			MaxConns        int32    `json:"max_conns"`
 			MinConns        int32    `json:"min_conns"`

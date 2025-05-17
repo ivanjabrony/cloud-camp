@@ -12,6 +12,7 @@ func Hello(str string) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Тест для Balancer
 func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)

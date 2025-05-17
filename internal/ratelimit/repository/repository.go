@@ -52,26 +52,27 @@ func (repo ConfigRepository) CreateOrUpdate(ctx context.Context, config *dto.Use
 		}
 	}()
 
-	update := repo.builder.Update("").
-		Set("ip", config.Ip).
-		Set("capacity", config.Capacity).
-		Set("rate_per_sec", config.RatePerSec)
+	// update := repo.builder.Update("cfgtable").
+	// 	Set("ip", config.Ip).
+	// 	Set("capacity", config.Capacity).
+	// 	Set("rate_per_sec", config.RatePerSec)
 
 	query, args, err := repo.builder.
 		Insert("user_configs").
 		Columns("ip", "capacity", "rate_per_sec").
 		Values(config.Ip, config.Capacity, config.RatePerSec).
-		Suffix("ON CONFLICT (client_id) DO UPDATE SET ?", update).
+		Suffix("ON CONFLICT (ip) DO UPDATE SET capacity = ?, rate_per_sec = ?", config.Capacity, config.RatePerSec).
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("failed to build query: %w", err)
 	}
 
-	_, err = tx.Query(ctx, query, args...)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create user: %w", err)
+		return nil, fmt.Errorf("failed to create config: %w", err)
 	}
 
+	rows.Close()
 	if err := tx.Commit(ctx); err != nil {
 		return nil, fmt.Errorf("commit failed: %w", err)
 	}

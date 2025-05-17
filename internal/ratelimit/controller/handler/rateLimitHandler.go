@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strings"
 )
 
 type RateLimiter interface {
@@ -43,9 +44,9 @@ func newRateLimitProxy(url *url.URL) *RateLimitProxy {
 }
 
 func (rl *RateLimitHandler) RateLimit(w http.ResponseWriter, r *http.Request) {
-	clientIP := getClientID(r)
+	clientIP := strings.Split(getClientID(r), ":")[0]
 
-	// Проверка rate limit
+	// check rate limit
 	if !rl.rateLimiter.Allow(r.Context(), clientIP) {
 		rl.logger.Warn("Rate limit exceeded", slog.String("client", clientIP))
 		w.WriteHeader(http.StatusTooManyRequests)
@@ -54,15 +55,16 @@ func (rl *RateLimitHandler) RateLimit(w http.ResponseWriter, r *http.Request) {
 
 	rl.logger.Debug("Proxying request",
 		slog.String("client", clientIP),
-		slog.String("path", r.URL.Path))
+		slog.String("path", r.URL.Path),
+		slog.String("target", rl.proxy.targetURL.String()))
 
-	// Перенаправление запроса в целевой сервис
+	// retranslating request
 	rl.proxy.proxy.ServeHTTP(w, r)
 }
 
 func getClientID(r *http.Request) string {
-	if id := r.Header.Get("X-Client-ID"); id != "" {
-		return id
-	}
+	// if id := r.Header.Get("X-Client-ID"); id != "" {
+	// 	return id
+	// }
 	return r.RemoteAddr
 }
