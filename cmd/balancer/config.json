@@ -1,0 +1,15 @@
+{
+  "env": "debug", 
+  "log_format": "text",
+  "port": 3000,
+  "urls": [
+    "http://localhost:8081",
+    "http://localhost:8082"
+  ],
+  "max_retries": 3,
+  "max_attempts": 3,
+  "shutdown_timeout": "25s",
+  "retry_timeout": "1s",
+  "health_pool_timeout": "5s",
+  "health_server_timeout": "1s"
+}

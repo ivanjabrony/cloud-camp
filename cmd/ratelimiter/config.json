@@ -1,0 +1,15 @@
+{
+  "env": "test",
+  "log_format": "text",
+  "target_url": "http://localhost:8080",
+  "port": 3000,
+  "user_config": {
+    "tokens": 10,
+    "rate_per_sec": 2.0
+  },
+  "db": {
+    "max_conns": 5,
+    "min_conns": 1,
+    "max_conn_lifetime": "5m"
+  }
+}
