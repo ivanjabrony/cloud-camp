@@ -20,6 +20,7 @@ func GetRetryFromContext(r *http.Request) int {
 	return 0
 }
 
+// LoadBalancer return a func that balances request between available services and checks availability
 func LoadBalancer(logger *logger.MyLogger, cfg *config.Config, pool *ServerPool) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		attempts := GetAttemptsFromContext(r)

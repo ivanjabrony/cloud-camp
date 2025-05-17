@@ -29,6 +29,7 @@ func (s *Server) SetHealth(health bool) {
 	s.mu.Unlock()
 }
 
+// HealthCheck checks and updates Service availability
 func (s *Server) HealthCheck(logger *logger.MyLogger, cfg *config.Config) bool {
 	timeout := cfg.HealthServerTimeout
 	conn, err := net.DialTimeout("tcp", s.URL.Host, timeout)
@@ -41,6 +42,7 @@ func (s *Server) HealthCheck(logger *logger.MyLogger, cfg *config.Config) bool {
 	return true
 }
 
+// HealthCheck checks and updates ServerPool availability
 func (p *ServerPool) HealthCheck(logger *logger.MyLogger, cfg *config.Config) {
 	for _, s := range p.servers {
 		status := "up"
@@ -54,6 +56,7 @@ func (p *ServerPool) HealthCheck(logger *logger.MyLogger, cfg *config.Config) {
 	}
 }
 
+// HealthCheckRoutine is a goroutine that checks health of every server and updates it based on a Healthcheck func result
 func HealthCheckRoutine(ctx context.Context, logger *logger.MyLogger, cfg *config.Config, pool *ServerPool) { // logger
 	t := time.NewTicker(cfg.HealthPoolTimeout)
 	defer t.Stop()

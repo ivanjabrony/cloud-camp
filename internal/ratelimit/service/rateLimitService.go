@@ -10,19 +10,21 @@ import (
 	"log/slog"
 )
 
-// BucketStorage is a interface for preferably in-memory storage for buckets. Basic implementation uses map[string]*ratelimit.TokenBucket with mutex,
+// BucketStorage is an interface for preferably in-memory storage for buckets. Basic implementation uses map[string]*ratelimit.TokenBucket with mutex,
 // but you can implement your own, for example sync.Map or Redis storage
 type BucketStorage interface {
 	Store(ctx context.Context, key string, bucket *ratelimit.TokenBucket)
 	Load(ctx context.Context, key string) (bucket *ratelimit.TokenBucket, ok bool)
 }
 
+// ConfigurationRepository is an interface for client configurations
 type ConfigurationRepository interface {
 	CreateOrUpdate(ctx context.Context, config *dto.UserConfig) (*dto.UserConfig, error)
 	GetByIp(ctx context.Context, ip string) (*dto.UserConfig, error)
 	GetAll(ctx context.Context) ([]*dto.UserConfig, error)
 }
 
+// RateLimitService is a service for managing client configurations and bucket initiation based on saved configurations
 type RateLimitService struct {
 	cfg           *config.Config
 	logger        *logger.MyLogger
@@ -56,6 +58,7 @@ func NewService(cfg *config.Config, logger *logger.MyLogger, cfgRepository Confi
 	return rl, nil
 }
 
+// configureBucket configures a bucket based on a client config and stores it in storage
 func (rl *RateLimitService) configureBucket(ctx context.Context, config *dto.UserConfig) error {
 	tb, ok := rl.bucketStorage.Load(ctx, config.Ip)
 	if !ok {
@@ -69,6 +72,7 @@ func (rl *RateLimitService) configureBucket(ctx context.Context, config *dto.Use
 	return nil
 }
 
+// CreateOrUpdateConfig adds a config into a repository or updates if it already exists
 func (rs *RateLimitService) CreateOrUpdateConfig(ctx context.Context, userConfig *dto.UserConfig) error {
 	ctx, cancel := context.WithTimeout(ctx, rs.cfg.RepositoryTimeout)
 	defer cancel()

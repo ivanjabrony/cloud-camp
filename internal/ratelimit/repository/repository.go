@@ -17,6 +17,7 @@ type PgxIface interface {
 	Close()
 }
 
+// ConfigRepository is a Postgres based repository client for storing clients configurations
 type ConfigRepository struct {
 	pool    PgxIface
 	builder squirrel.StatementBuilderType
@@ -35,7 +36,6 @@ func NewConfigRepository(pool PgxIface, logger *logger.MyLogger) (*ConfigReposit
 	}, nil
 }
 
-// TODO logging
 func (repo ConfigRepository) CreateOrUpdate(ctx context.Context, config *dto.UserConfig) (*dto.UserConfig, error) {
 	tx, err := repo.pool.Begin(ctx)
 	if err != nil {
@@ -51,11 +51,6 @@ func (repo ConfigRepository) CreateOrUpdate(ctx context.Context, config *dto.Use
 			}
 		}
 	}()
-
-	// update := repo.builder.Update("cfgtable").
-	// 	Set("ip", config.Ip).
-	// 	Set("capacity", config.Capacity).
-	// 	Set("rate_per_sec", config.RatePerSec)
 
 	query, args, err := repo.builder.
 		Insert("user_configs").

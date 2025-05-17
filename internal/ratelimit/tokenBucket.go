@@ -5,16 +5,20 @@ import (
 	"time"
 )
 
+// TokenBucket - struct that represents buckets with tokens
+//
+// Holds all configuration info about buckets and fields for refreshing tokens
 type TokenBucket struct {
-	capacity   int
-	ratePerSec float64
-	available  float64
-	lastRefill time.Time
+	capacity   int       // max amount of tokens stored
+	ratePerSec float64   // rate of tokens' refreshing
+	available  float64   // current available
+	lastRefill time.Time // last refresh time
 	ticker     *time.Ticker
-	stopChan   chan struct{}
+	stopChan   chan struct{} // chan for stopping refresh ticker
 	mu         sync.Mutex
 }
 
+// NewTokenBucket creates new bucket and starts goroutine that will refresh tokens
 func NewTokenBucket(capacity int, ratePerSec float64) *TokenBucket {
 	tb := &TokenBucket{
 		capacity:   capacity,
@@ -31,6 +35,7 @@ func NewTokenBucket(capacity int, ratePerSec float64) *TokenBucket {
 	return tb
 }
 
+// calculateRefillInterval calculates optimal refill rate based on rps
 func calculateRefillInterval(ratePerSec float64) time.Duration {
 	// higher refresh rate for high prs
 	if ratePerSec >= 10 {
@@ -42,6 +47,9 @@ func calculateRefillInterval(ratePerSec float64) time.Duration {
 	return time.Second
 }
 
+// startRefiller starts refilling goroutine
+//
+// Stops via closing stopChan from bucket struct and refreshes tokens based on ticker
 func (tb *TokenBucket) startRefiller() {
 	for {
 		select {
@@ -54,6 +62,7 @@ func (tb *TokenBucket) startRefiller() {
 	}
 }
 
+// refill refills tokens
 func (tb *TokenBucket) refill() {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
@@ -102,6 +111,7 @@ func (tb *TokenBucket) Allow() bool {
 	return false
 }
 
+// Stop stops all refill goroutines
 func (tb *TokenBucket) Stop() {
 	close(tb.stopChan)
 }
